@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280">
+<title>图寻工作台</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="side">
+    <div class="brand">
+      <div class="mark">图</div>
+      <div>
+        <b>图寻工作台</b>
+        <small>个人版</small>
+      </div>
+    </div>
+
+    <nav class="nav" id="nav">
+      <button type="button" data-route="overview" class="active">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>
+        <span>概览</span>
+      </button>
+      <button type="button" data-route="money">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18" stroke-linecap="round"/><circle cx="17" cy="14.5" r="1.1" fill="currentColor" stroke="none"/></svg>
+        <span>收支</span>
+      </button>
+      <button type="button" data-route="todos">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M8.4 12.2l2.5 2.4 4.6-4.8"/></svg>
+        <span>待办</span>
+        <span class="count" id="nav-todo-count">0</span>
+      </button>
+      <button type="button" data-route="ideas">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 18h5"/><path d="M10.5 21h3"/><path d="M12 3a6 6 0 0 0-3.7 10.7c.6.5.9 1.2.9 1.9h5.6c0-.7.3-1.4.9-1.9A6 6 0 0 0 12 3z"/></svg>
+        <span>灵感</span>
+        <span class="count" id="nav-idea-count">0</span>
+      </button>
+      <button type="button" data-route="backup">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2l8 4.3v9L12 20.8l-8-4.3v-9z"/><path d="M4 7.5l8 4.3 8-4.3"/><path d="M12 11.8V20.4"/></svg>
+        <span>备份</span>
+      </button>
+    </nav>
+
+    <div class="side-foot">
+      <div class="side-tip">数据只保存在这台电脑的浏览器里，不上传任何服务器。</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="wrap">
+
+      <section class="view" id="view-overview">
+        <div class="page-head">
+          <div>
+            <h1>概览</h1>
+            <p class="sub" id="ov-sub"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-money" hidden>
+        <div class="page-head">
+          <div>
+            <h1>收支</h1>
+            <p class="sub">记一笔，月底自动汇总</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-todos" hidden>
+        <div class="page-head">
+          <div>
+            <h1>待办</h1>
+            <p class="sub">按截止日期排序，过期自动标红</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-ideas" hidden>
+        <div class="page-head">
+          <div>
+            <h1>灵感</h1>
+            <p class="sub">文字、链接、图片，随手收进来</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-backup" hidden>
+        <div class="page-head">
+          <div>
+            <h1>备份</h1>
+            <p class="sub">本地存储唯一的保险绳</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+</div>
+
+</body>
+</html>
