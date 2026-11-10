@@ -123,17 +123,60 @@
     for (var i = 0; i < fields.length; i++) fields[i].classList.remove('invalid');
   }
 
+  /* 二次确认：正文写清要删什么，按钮写「删除」，不写「确定」 */
+  var confirmAction = null;
+
+  function confirmBox(opts) {
+    var o = opts || {};
+    document.getElementById('cf-title').textContent = o.title || '确定要删除吗？';
+    document.getElementById('cf-text').textContent = o.text || '删掉之后就找不回来了。';
+
+    var quote = document.getElementById('cf-quote');
+    quote.textContent = o.quote || '';
+    quote.hidden = !o.quote;
+
+    var ok = document.getElementById('cf-ok');
+    ok.textContent = o.okText || '删除';
+    ok.disabled = false;
+
+    confirmAction = typeof o.onOk === 'function' ? o.onOk : null;
+    openDialog('dlg-confirm');
+  }
+
+  function bindConfirm() {
+    var ok = document.getElementById('cf-ok');
+    if (!ok) return;
+    ok.addEventListener('click', function () {
+      var action = confirmAction;
+      if (!action) {
+        closeDialog('dlg-confirm');
+        return;
+      }
+      ok.disabled = true;
+      Promise.resolve().then(action).catch(function (err) {
+        if (global.console) global.console.error('确认操作失败', err);
+      }).then(function () {
+        ok.disabled = false;
+        confirmAction = null;
+        closeDialog('dlg-confirm');
+      });
+    });
+  }
+
   TW.UI = {
     banner: banner,
     clearBanner: clearBanner,
     fatal: fatal,
     toast: toast,
+    confirm: confirmBox,
     openDialog: openDialog,
     closeDialog: closeDialog,
     fieldError: fieldError,
     clearFieldError: clearFieldError,
     clearFieldErrors: clearFieldErrors
   };
+
+  bindConfirm();
 
   /* 窗口变化时提示条可能换行，高度要跟着重算 */
   global.addEventListener('resize', function () {

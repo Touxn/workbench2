@@ -151,6 +151,22 @@
   </div>
 </dialog>
 
+<dialog id="dlg-confirm">
+  <div class="dlg-head">
+    <h3 id="cf-title">删除这条记录？</h3>
+  </div>
+  <div class="dlg-body">
+    <div class="dlg-msg">
+      <span id="cf-text">删掉之后就找不回来了。</span>
+      <div class="quote" id="cf-quote"></div>
+    </div>
+  </div>
+  <div class="dlg-foot">
+    <button class="btn" type="button" data-close="dlg-confirm">取消</button>
+    <button class="btn btn-danger" type="button" id="cf-ok">删除</button>
+  </div>
+</dialog>
+
 <script src="js/util.js"></script>
 <script src="js/db.js"></script>
 <script src="js/store.js"></script>

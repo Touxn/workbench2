@@ -147,11 +147,17 @@
 
   /* ---------- 收支 ---------- */
 
-  var moneyState = { month: null, type: 'expense' };
+  var moneyState = { month: null, type: 'expense', rows: [] };
+
+  var TRASH = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 7h15"/><path d="M9.5 7V4.8h5V7"/><path d="M6.5 7l.9 12.1h9.2L17.5 7"/><path d="M10.4 10.6v5.6M13.6 10.6v5.6"/></svg>';
 
   function currentMonth() {
     if (!moneyState.month) moneyState.month = TW.Store.pref('month');
     return moneyState.month;
+  }
+
+  function amountText(r) {
+    return (r.type === 'income' ? '+' : '-') + money(r.amountCents);
   }
 
   function txRow(r) {
@@ -161,13 +167,14 @@
         '<div class="tx-cat">' + esc(r.category) + '</div>' +
         (r.note ? '<div class="tx-note">' + esc(r.note) + '</div>' : '') +
       '</div>' +
-      '<div class="tx-amt' + (r.type === 'income' ? ' in' : '') + '">' +
-        (r.type === 'income' ? '+' : '-') + money(r.amountCents) +
-      '</div>' +
+      '<div class="tx-amt' + (r.type === 'income' ? ' in' : '') + '">' + amountText(r) + '</div>' +
+      '<button class="del" type="button" data-del-tx="' + esc(r.id) + '" title="删除这条" aria-label="删除这条">' + TRASH + '</button>' +
     '</div>';
   }
 
   function paintMoney(month, rows) {
+    moneyState.rows = rows;
+
     var sub = document.getElementById('money-sub');
     if (sub) sub.textContent = U.date.monthLabel(month) + ' · 共 ' + rows.length + ' 笔';
 
@@ -211,6 +218,39 @@
       });
     }
   };
+
+  /* 删除前先确认，确认框正文要写清删的是哪一笔 */
+  function askDeleteMoney(id) {
+    var row = null;
+    for (var i = 0; i < moneyState.rows.length; i++) {
+      if (moneyState.rows[i].id === id) {
+        row = moneyState.rows[i];
+        break;
+      }
+    }
+    if (!row) return;
+
+    var quote = U.date.dayLabel(row.date) + ' · ' + row.category + ' · ' + amountText(row);
+    if (row.note) quote += ' · ' + row.note;
+
+    UI.confirm({
+      title: '删除这笔记录？',
+      text: '这笔会从列表和统计里一起消失，找不回来。',
+      quote: quote,
+      okText: '删除',
+      onOk: function () {
+        return TW.Store.money.remove(id).then(function () {
+          return Views.money.render();
+        }).then(function () {
+          UI.toast('已删除 · ' + row.category + ' ' + amountText(row));
+        }, function (err) {
+          /* 目标已经不在了就不打扰，按最新数据重画即可 */
+          if (err && err.code === 'E_NOT_FOUND') return Views.money.render();
+          UI.toast('删除失败，请重试');
+        });
+      }
+    });
+  }
 
   /* 金额输入框只留数字与一个小数点，最多两位小数。负号保留，交给保存时提示 */
   function sanitizeAmount(raw) {
@@ -380,6 +420,11 @@
   });
 
   document.getElementById('f-save').addEventListener('click', saveMoney);
+
+  document.getElementById('view-money').addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-del-tx]');
+    if (btn) askDeleteMoney(btn.getAttribute('data-del-tx'));
+  });
 
   /* 弹层内的关闭按钮统一处理，写 data-close 指向要关的弹层 id */
   document.addEventListener('click', function (e) {
