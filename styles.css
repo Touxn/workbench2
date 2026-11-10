@@ -96,3 +96,4 @@ a{color:var(--accent)}
 .side-tip{font-size:11px;color:var(--muted);line-height:1.6;padding:2px 4px}
 
 /* ---------- 五、视图 ---------- */
+.view[hidden]{display:none}
