@@ -76,10 +76,14 @@
 
   var AMOUNT_MAX = 100000000;   /* 一百万元，单位分 */
   var NOTE_MAX = 60;
+  var IDEA_TEXT_MAX = 2000;
+  var IDEA_KINDS = ['text', 'link', 'image'];
 
-  function invalid(message) {
+  /* field 指向出问题的表单项，视图层据此把红字标在对应位置 */
+  function invalid(message, field) {
     var err = new Error(message);
     err.code = 'E_INVALID_INPUT';
+    if (field) err.field = field;
     return err;
   }
 
@@ -195,10 +199,96 @@
     });
   }
 
+  /* ---------- 灵感 ---------- */
+
+  /* 新的在前。列表只带缩略图，原图留在 ideaImages 里按需读 */
+  function ideaList() {
+    return DB.getAll('ideas').then(function (rows) {
+      return rows.sort(function (a, b) {
+        return b.createdAt - a.createdAt;
+      });
+    });
+  }
+
+  function ideaGetImage(imageId) {
+    if (!imageId) return Promise.resolve(null);
+    return DB.get('ideaImages', imageId).then(function (rec) {
+      return rec ? rec.blob : null;
+    });
+  }
+
+  function ideaCreate(input) {
+    var kind = input.kind;
+    if (IDEA_KINDS.indexOf(kind) === -1) return Promise.reject(invalid('形态不正确', 'text'));
+
+    var text = String(input.text == null ? '' : input.text).trim();
+    if (text.length > IDEA_TEXT_MAX) {
+      return Promise.reject(invalid('正文最多 ' + IDEA_TEXT_MAX + ' 字', 'text'));
+    }
+
+    var url = '';
+    if (kind === 'link') {
+      url = String(input.url == null ? '' : input.url).trim();
+      if (!/^https?:\/\/\S+$/i.test(url)) {
+        return Promise.reject(invalid('请输入完整网址，以 http 开头', 'url'));
+      }
+    }
+
+    /* BR-4.3 正文只有在图片形态下才允许为空 */
+    if (kind !== 'image' && !text) {
+      return Promise.reject(invalid(kind === 'link' ? '写一句这个链接是什么' : '写点内容再保存', 'text'));
+    }
+
+    var prepared = kind === 'image' ? TW.Image.compress(input.file) : Promise.resolve(null);
+
+    return prepared.then(function (img) {
+      var now = Date.now();
+      var record = {
+        id: TW.Utils.id('idea'),
+        kind: kind,
+        text: text,
+        url: url,
+        imageId: img ? TW.Utils.id('img') : null,
+        thumb: img ? img.thumb : null,
+        imageWidth: img ? img.width : null,
+        imageHeight: img ? img.height : null,
+        imageBytes: img ? img.bytes : null,
+        createdAt: now,
+        updatedAt: now
+      };
+
+      var image = img ? {
+        id: record.imageId,
+        blob: img.blob,
+        mime: 'image/jpeg',
+        bytes: img.bytes,
+        createdAt: now
+      } : null;
+
+      /* 元数据与图片必须一起成功，任一失败整笔回滚 */
+      return DB.run(['ideas', 'ideaImages'], 'readwrite', function (tx) {
+        if (image) tx.objectStore('ideaImages').put(image);
+        tx.objectStore('ideas').put(record);
+        return record;
+      });
+    });
+  }
+
+  function ideaRemove(id) {
+    return DB.get('ideas', id).then(function (rec) {
+      if (!rec) throw notFound('这条灵感已经不在了');
+      return DB.run(['ideas', 'ideaImages'], 'readwrite', function (tx) {
+        tx.objectStore('ideas').delete(id);
+        if (rec.imageId) tx.objectStore('ideaImages').delete(rec.imageId);
+      });
+    });
+  }
+
   TW.Store = {
     categories: CATEGORIES,
     amountMax: AMOUNT_MAX,
     noteMax: NOTE_MAX,
+    ideaTextMax: IDEA_TEXT_MAX,
     init: init,
     isReady: isReady,
     pref: pref,
@@ -210,6 +300,12 @@
       summary: moneySummary,
       monthlyExpense: moneyMonthlyExpense,
       remove: moneyRemove
+    },
+    ideas: {
+      create: ideaCreate,
+      list: ideaList,
+      getImage: ideaGetImage,
+      remove: ideaRemove
     }
   };
 

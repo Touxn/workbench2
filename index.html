@@ -87,7 +87,12 @@
         <div class="page-head">
           <div>
             <h1>灵感</h1>
-            <p class="sub">文字、链接、图片，随手收进来</p>
+            <p class="sub" id="idea-sub">文字、链接、图片，随手收进来</p>
+          </div>
+          <div class="head-actions">
+            <button class="btn" type="button" data-idea="text">文本</button>
+            <button class="btn" type="button" data-idea="link">链接</button>
+            <button class="btn btn-primary" type="button" data-idea="image">图片</button>
           </div>
         </div>
         <div class="view-body"></div>
@@ -167,8 +172,78 @@
   </div>
 </dialog>
 
+<dialog id="dlg-idea-new">
+  <button class="dlg-close" type="button" data-close="dlg-idea-new" aria-label="关闭">×</button>
+  <div class="dlg-head">
+    <h3 id="ni-title">记一条灵感</h3>
+    <p id="ni-tip">想到什么写什么，回头找得到</p>
+  </div>
+  <div class="dlg-body">
+    <div class="field">
+      <label>形态</label>
+      <div class="seg" id="ni-kind">
+        <button type="button" data-kind="text" class="on">文本</button>
+        <button type="button" data-kind="link">链接</button>
+        <button type="button" data-kind="image">图片</button>
+      </div>
+    </div>
+
+    <div class="field" id="fld-ni-text">
+      <label for="ni-text">内容</label>
+      <textarea class="input" id="ni-text" rows="5" maxlength="2000" placeholder="写点什么"></textarea>
+      <div class="err">写点内容再保存</div>
+    </div>
+
+    <div class="field" id="fld-ni-url" hidden>
+      <label for="ni-url">网址</label>
+      <input class="input" type="text" id="ni-url" placeholder="https://" autocomplete="off" spellcheck="false">
+      <div class="err">请输入完整网址，以 http 开头</div>
+    </div>
+
+    <div class="field" id="fld-ni-image" hidden>
+      <label>图片</label>
+      <input type="file" id="ni-file" accept="image/*" hidden>
+      <div class="pick" id="ni-pick">
+        <button class="btn" type="button" id="ni-pick-btn">选择图片</button>
+        <span class="pick-hint">不超过 20MB，保存时自动压缩</span>
+      </div>
+      <div class="pick-preview" id="ni-preview" hidden>
+        <img id="ni-preview-img" alt="">
+        <div class="pick-meta">
+          <b id="ni-preview-name"></b>
+          <span id="ni-preview-size"></span>
+        </div>
+        <button class="link-btn" type="button" id="ni-pick-again">换一张</button>
+      </div>
+      <div class="err">请选择一张图片</div>
+    </div>
+  </div>
+  <div class="dlg-foot">
+    <button class="btn" type="button" data-close="dlg-idea-new">取消</button>
+    <button class="btn btn-primary" type="button" id="ni-save">保存</button>
+  </div>
+</dialog>
+
+<dialog id="dlg-idea" class="idea-dlg">
+  <button class="dlg-close" type="button" data-close="dlg-idea" aria-label="关闭">×</button>
+  <div class="dlg-head">
+    <h3 id="vi-title">灵感详情</h3>
+    <p id="vi-meta"></p>
+  </div>
+  <div class="dlg-body">
+    <div class="vi-image" id="vi-image" hidden><img id="vi-img" alt=""></div>
+    <div class="vi-text" id="vi-text"></div>
+    <a class="vi-link" id="vi-link" href="#" target="_blank" rel="noopener noreferrer"></a>
+  </div>
+  <div class="dlg-foot spread">
+    <button class="btn btn-danger" type="button" id="vi-del">删除</button>
+    <button class="btn btn-primary" type="button" data-close="dlg-idea">关闭</button>
+  </div>
+</dialog>
+
 <script src="js/util.js"></script>
 <script src="js/db.js"></script>
+<script src="js/image.js"></script>
 <script src="js/store.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/views.js"></script>
