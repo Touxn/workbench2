@@ -211,6 +211,10 @@ select{
 .sum-top .k{white-space:nowrap}
 .sum-top .v{font-variant-numeric:tabular-nums;font-weight:500;white-space:nowrap}
 .sum-top .v.in{color:var(--income)}
+.bar{height:5px;background:var(--line-soft);border-radius:3px;overflow:hidden;margin-top:7px}
+.bar i{display:block;height:100%;border-radius:3px;background:var(--accent)}
+.bar i.in{background:var(--income)}
+.bar i.ex{background:#9AA3A8}
 
 .top-cats{margin-top:14px;padding-top:12px;border-top:1px solid var(--line-soft)}
 .top-cats .tc-h{font-size:11.5px;color:var(--muted);margin-bottom:9px;letter-spacing:.3px}
@@ -229,6 +233,52 @@ select{
 .empty .e-ico{width:38px;height:38px;margin:0 auto 12px;border-radius:10px;background:#F1F1EC;display:grid;place-items:center;color:#B4B8B2}
 .empty .e-title{font-size:14px;color:var(--ink-2);margin-bottom:5px}
 .empty .e-sub{font-size:12.5px;color:var(--muted)}
+
+/* 收支 */
+.money-bar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;margin-bottom:14px;gap:16px}
+.month-nav{display:flex;align-items:center;gap:12px}
+.month-nav .m{font-size:14px;font-weight:600;min-width:104px;text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap}
+.icon-btn{
+  width:26px;height:26px;border-radius:7px;border:1px solid var(--line);background:#fff;
+  display:grid;place-items:center;color:var(--ink-2);padding:0;
+}
+.icon-btn:hover{background:#F7F7F3}
+.money-totals{display:flex;gap:28px}
+.money-tot{text-align:right}
+.money-tot .k{font-size:11.5px;color:var(--muted)}
+.money-tot .v{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+.money-tot .v.in{color:var(--income)}
+.money-tot .v.neg{color:var(--warn)}
+
+.cat-block{padding:18px 20px 16px}
+.cat-split{display:grid;grid-template-columns:132px 1fr;gap:20px;align-items:center}
+.donut{position:relative;width:132px;height:132px}
+.donut svg{display:block}
+.donut-center{position:absolute;inset:0;display:grid;place-content:center;text-align:center;pointer-events:none}
+.donut-center span{display:block;font-size:11px;color:var(--muted);margin-bottom:2px}
+.donut-center b{font-size:13.5px;font-weight:600;font-variant-numeric:tabular-nums}
+
+.legend{display:flex;flex-direction:column;min-width:0}
+.legend-row{display:grid;grid-template-columns:8px 1fr auto 42px;gap:9px;align-items:center;padding:5px 0;font-size:12.5px;border-bottom:1px solid var(--line-soft)}
+.legend-row:last-child{border-bottom:none}
+.legend-dot{width:8px;height:8px;border-radius:50%}
+.legend-name{color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.legend-val{color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+.legend-pct{color:var(--muted);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.cat-empty{font-size:12.5px;color:var(--muted);padding:2px 0 4px}
+
+.grid-charts{display:grid;grid-template-columns:.85fr 1.15fr;gap:14px;margin-bottom:14px}
+.grid-charts > *{min-width:0}
+
+.trend-block{padding:18px 20px 16px;display:flex;flex-direction:column}
+.trend{display:flex;align-items:flex-end;gap:6px;flex:1;min-height:152px}
+.trend-col{flex:1;min-width:0;display:flex;flex-direction:column;height:100%}
+.trend-val{height:17px;line-height:17px;font-size:11px;color:var(--muted);text-align:center;font-variant-numeric:tabular-nums;overflow:hidden;white-space:nowrap}
+.trend-track{flex:1;display:flex;align-items:flex-end;justify-content:center}
+.trend-track i{display:block;width:58%;max-width:34px;border-radius:4px 4px 0 0;background:#E2E0D8}
+.trend-track i.on{background:var(--accent)}
+.trend-m{font-size:11px;color:var(--muted);text-align:center;margin-top:9px;white-space:nowrap}
+.trend-m.on{color:var(--ink-2);font-weight:600}
 
 /* 收支与待办的列表 */
 .list-card{padding:7px 20px 14px}

@@ -180,6 +180,21 @@
     });
   }
 
+  /* 连续若干个月的支出合计，末月由调用方指定，用于趋势图 */
+  function moneyMonthlyExpense(endMonth, count) {
+    var months = [];
+    for (var i = Number(count) - 1; i >= 0; i--) {
+      months.push(TW.Utils.date.shiftMonth(endMonth, -i));
+    }
+    return Promise.all(months.map(function (m) {
+      return moneySummary(m);
+    })).then(function (list) {
+      return list.map(function (sum, idx) {
+        return { month: months[idx], expense: sum.expense };
+      });
+    });
+  }
+
   TW.Store = {
     categories: CATEGORIES,
     amountMax: AMOUNT_MAX,
@@ -193,6 +208,7 @@
       listByMonth: moneyListByMonth,
       listByDate: moneyListByDate,
       summary: moneySummary,
+      monthlyExpense: moneyMonthlyExpense,
       remove: moneyRemove
     }
   };

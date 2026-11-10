@@ -56,6 +56,13 @@
     return Number(p[1]) + ' 月 ' + Number(p[2]) + ' 日';
   }
 
+  /* 月份前后挪。用 Date 处理跨年，delta 可为负数 */
+  function shiftMonth(month, delta) {
+    var p = String(month).split('-');
+    var d = new Date(Number(p[0]), Number(p[1]) - 1 + Number(delta), 1);
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1);
+  }
+
   /* 全局唯一 ID：前缀_时间戳36进制_四位随机 */
   function makeId(prefix) {
     var rand = Math.random().toString(36).slice(2, 6);
@@ -68,7 +75,8 @@
       monthOf: monthOf,
       weekday: weekday,
       monthLabel: monthLabel,
-      dayLabel: dayLabel
+      dayLabel: dayLabel,
+      shiftMonth: shiftMonth
     },
     money: {
       format: formatCents,

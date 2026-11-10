@@ -87,6 +87,7 @@
         });
 
         var tops = sum.byCategory.slice(0, 3);
+        var maxFlow = Math.max(sum.income, sum.expense, 1);
         var topHtml = tops.length
           ? tops.map(function (c) {
               var pct = sum.expense ? c.cents / sum.expense * 100 : 0;
@@ -125,8 +126,10 @@
           '<div class="grid-2">' +
             '<section class="card block">' +
               '<div class="block-head"><h2>本月收支</h2><a href="#/money">查看明细</a></div>' +
-              '<div class="sum-row"><div class="sum-top"><span class="k">收入</span><span class="v in">¥' + money(sum.income) + '</span></div></div>' +
-              '<div class="sum-row"><div class="sum-top"><span class="k">支出</span><span class="v">¥' + money(sum.expense) + '</span></div></div>' +
+              '<div class="sum-row"><div class="sum-top"><span class="k">收入</span><span class="v in">¥' + money(sum.income) + '</span></div>' +
+                '<div class="bar"><i class="in" style="width:' + (sum.income / maxFlow * 100) + '%"></i></div></div>' +
+              '<div class="sum-row"><div class="sum-top"><span class="k">支出</span><span class="v">¥' + money(sum.expense) + '</span></div>' +
+                '<div class="bar"><i class="ex" style="width:' + (sum.expense / maxFlow * 100) + '%"></i></div></div>' +
               '<div class="sum-row"><div class="sum-top"><span class="k">结余</span><span class="v">' + (sum.net < 0 ? '-' : '') + '¥' + money(Math.abs(sum.net)) + '</span></div></div>' +
               '<div class="top-cats">' +
                 '<div class="tc-h">支出前三</div>' +
@@ -172,19 +175,132 @@
     '</div>';
   }
 
-  function paintMoney(month, rows) {
+  function paintMoney(month, rows, sum, trend) {
     moneyState.rows = rows;
 
-    var sub = document.getElementById('money-sub');
-    if (sub) sub.textContent = U.date.monthLabel(month) + ' · 共 ' + rows.length + ' 笔';
+    setBody('money',
+      moneyBar(month, sum) +
+      '<div class="grid-charts">' +
+        catSection(sum) +
+        trendChart(trend, month) +
+      '</div>' +
+      listCard(rows)
+    );
+  }
 
+  var ARROW_L = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>';
+  var ARROW_R = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>';
+
+  /* 百分比：整数，不足 1% 时给一位小数，避免一堆 0% */
+  function pctText(pct) {
+    var p = pct * 100;
+    if (p > 0 && p < 1) return p.toFixed(1) + '%';
+    return Math.round(p) + '%';
+  }
+
+  function moneyBar(month, sum) {
+    return '<div class="card money-bar">' +
+      '<div class="month-nav">' +
+        '<button class="icon-btn" type="button" data-month="-1" aria-label="上个月" title="上个月">' + ARROW_L + '</button>' +
+        '<span class="m">' + U.date.monthLabel(month) + '</span>' +
+        '<button class="icon-btn" type="button" data-month="1" aria-label="下个月" title="下个月">' + ARROW_R + '</button>' +
+      '</div>' +
+      '<div class="money-totals">' +
+        '<div class="money-tot"><div class="k">收入</div><div class="v in">' + money(sum.income) + '</div></div>' +
+        '<div class="money-tot"><div class="k">支出</div><div class="v">' + money(sum.expense) + '</div></div>' +
+        '<div class="money-tot"><div class="k">结余</div><div class="v' + (sum.net < 0 ? ' neg' : '') + '">' + money(sum.net) + '</div></div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  /* 类别占比用 SVG 描边画环形，不引第三方图表库 */
+  function donutChart(sum) {
+    var size = 132;
+    var stroke = 18;
+    var radius = (size - stroke) / 2;
+    var len = 2 * Math.PI * radius;
+    var acc = 0;
+
+    var segs = sum.byCategory.map(function (c) {
+      var dash = c.cents / sum.expense * len;
+      var color = CAT_COLOR[c.category] || '#A9A9A2';
+      var seg = '<circle cx="' + (size / 2) + '" cy="' + (size / 2) + '" r="' + radius + '" fill="none" ' +
+        'stroke="' + color + '" stroke-width="' + stroke + '" ' +
+        'stroke-dasharray="' + dash.toFixed(2) + ' ' + (len - dash).toFixed(2) + '" ' +
+        'stroke-dashoffset="' + (-acc).toFixed(2) + '"></circle>';
+      acc += dash;
+      return seg;
+    }).join('');
+
+    var legend = sum.byCategory.map(function (c) {
+      return '<div class="legend-row">' +
+        '<span class="legend-dot" style="background:' + (CAT_COLOR[c.category] || '#A9A9A2') + '"></span>' +
+        '<span class="legend-name">' + esc(c.category) + '</span>' +
+        '<span class="legend-val">¥' + money(c.cents) + '</span>' +
+        '<span class="legend-pct">' + pctText(c.cents / sum.expense) + '</span>' +
+      '</div>';
+    }).join('');
+
+    return '<section class="card block cat-block">' +
+      '<div class="block-head"><h2>支出分类占比</h2></div>' +
+      '<div class="cat-split">' +
+        '<div class="donut">' +
+          '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '">' +
+            '<g transform="rotate(-90 ' + (size / 2) + ' ' + (size / 2) + ')">' + segs + '</g>' +
+          '</svg>' +
+          '<div class="donut-center"><span>支出合计</span><b>¥' + money(sum.expense) + '</b></div>' +
+        '</div>' +
+        '<div class="legend">' + legend + '</div>' +
+      '</div>' +
+    '</section>';
+  }
+
+  /* 支出为 0 时不画环，避免出现一个空心圆占着地方 */
+  function catSection(sum) {
+    if (!sum.expense) {
+      return '<section class="card block cat-block">' +
+        '<div class="block-head"><h2>支出分类占比</h2></div>' +
+        '<div class="cat-empty">本月还没有支出记录</div>' +
+      '</section>';
+    }
+    return donutChart(sum);
+  }
+
+  /* 柱子上方的数字。上万元用「万」，避免窄列里挤成一团 */
+  function trendValue(cents) {
+    if (!cents) return '0';
+    if (cents >= 1000000) return (cents / 1000000).toFixed(1) + ' 万';
+    return money(cents);
+  }
+
+  /* 六个月柱形，选中月用主色，其余用浅灰 */
+  function trendChart(months, current) {
+    var max = 0;
+    months.forEach(function (m) {
+      if (m.expense > max) max = m.expense;
+    });
+
+    var cols = months.map(function (m) {
+      var on = m.month === current;
+      var h = max ? Math.max(m.expense / max * 100, m.expense ? 3 : 0) : 0;
+      return '<div class="trend-col">' +
+        '<div class="trend-val">' + trendValue(m.expense) + '</div>' +
+        '<div class="trend-track"><i class="' + (on ? 'on' : '') + '" style="height:' + h.toFixed(1) + '%"></i></div>' +
+        '<div class="trend-m' + (on ? ' on' : '') + '">' + Number(m.month.slice(5)) + ' 月</div>' +
+      '</div>';
+    }).join('');
+
+    return '<section class="card block trend-block">' +
+      '<div class="block-head"><h2>近六个月支出趋势</h2></div>' +
+      '<div class="trend">' + cols + '</div>' +
+    '</section>';
+  }
+
+  function listCard(rows) {
     if (!rows.length) {
-      setBody('money',
-        '<section class="card list-card">' +
-          empty('receipt', '这个月还没有记录', '点右上角「记一笔」开始，记完会出现在这里') +
-        '</section>'
-      );
-      return;
+      return '<section class="card list-card">' +
+        empty('receipt', '这个月还没有记录', '点右上角「记一笔」开始，记完会出现在这里') +
+      '</section>';
     }
 
     var groups = {};
@@ -207,17 +323,32 @@
       '</div>';
     }).join('');
 
-    setBody('money', '<section class="card list-card">' + html + '</section>');
+    return '<section class="card list-card">' + html + '</section>';
   }
+
+  /* 连点月份箭头时，只让最后一次渲染落到界面上，避免旧结果盖掉新结果 */
+  var moneyRenderSeq = 0;
 
   Views.money = {
     render: function () {
+      var seq = ++moneyRenderSeq;
       var month = currentMonth();
-      return TW.Store.money.listByMonth(month).then(function (rows) {
-        paintMoney(month, rows);
+      return Promise.all([
+        TW.Store.money.listByMonth(month),
+        TW.Store.money.summary(month),
+        TW.Store.money.monthlyExpense(month, 6)
+      ]).then(function (res) {
+        if (seq !== moneyRenderSeq) return;
+        paintMoney(month, res[0], res[1], res[2]);
       });
     }
   };
+
+  function shiftMonthView(delta) {
+    moneyState.month = U.date.shiftMonth(currentMonth(), Number(delta));
+    TW.Store.setPref('month', moneyState.month);
+    return Views.money.render();
+  }
 
   /* 删除前先确认，确认框正文要写清删的是哪一笔 */
   function askDeleteMoney(id) {
@@ -422,8 +553,13 @@
   document.getElementById('f-save').addEventListener('click', saveMoney);
 
   document.getElementById('view-money').addEventListener('click', function (e) {
-    var btn = e.target.closest('[data-del-tx]');
-    if (btn) askDeleteMoney(btn.getAttribute('data-del-tx'));
+    var del = e.target.closest('[data-del-tx]');
+    if (del) {
+      askDeleteMoney(del.getAttribute('data-del-tx'));
+      return;
+    }
+    var nav = e.target.closest('[data-month]');
+    if (nav) shiftMonthView(nav.getAttribute('data-month'));
   });
 
   /* 弹层内的关闭按钮统一处理，写 data-close 指向要关的弹层 id */
