@@ -57,9 +57,20 @@
     document.title = TITLES[route] + ' · 图寻工作台';
   }
 
-  /* 只换页面名，不重算数据。渲染交给各视图自己 */
+  /* 只换页面名并让对应视图重绘。数据重算交给视图自己，概览每次进入都会重算 */
   function render(route) {
     show(route);
+    var view = TW.Views && TW.Views[route];
+    if (view && typeof view.render === 'function') {
+      try {
+        view.render();
+        TW.UI.clearBanner('view');
+      } catch (e) {
+        /* 单个视图出错不该拖垮整页，顶部给一条可读的提示 */
+        if (global.console) global.console.error('视图渲染失败：' + route, e);
+        TW.UI.banner('view', '这个页面显示出了点问题，刷新页面试试。');
+      }
+    }
     global.scrollTo(0, 0);
   }
 
