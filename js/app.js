@@ -57,21 +57,23 @@
     document.title = TITLES[route] + ' · 图寻工作台';
   }
 
-  /* 只换页面名并让对应视图重绘。数据重算交给视图自己，概览每次进入都会重算 */
+  /* 只换页面名并让对应视图重绘。视图可以是同步也可以是异步的 */
   function render(route) {
     show(route);
-    var view = TW.Views && TW.Views[route];
-    if (view && typeof view.render === 'function') {
-      try {
-        view.render();
-        TW.UI.clearBanner('view');
-      } catch (e) {
-        /* 单个视图出错不该拖垮整页，顶部给一条可读的提示 */
-        if (global.console) global.console.error('视图渲染失败：' + route, e);
-        TW.UI.banner('view', '这个页面显示出了点问题，刷新页面试试。');
-      }
-    }
     global.scrollTo(0, 0);
+
+    var view = TW.Views && TW.Views[route];
+    if (!view || typeof view.render !== 'function') return;
+
+    Promise.resolve().then(function () {
+      return view.render();
+    }).then(function () {
+      TW.UI.clearBanner('view');
+    }).catch(function (err) {
+      /* 单个视图出错不该拖垮整页，顶部给一条可读的提示 */
+      if (global.console) global.console.error('视图渲染失败：' + route, err);
+      TW.UI.banner('view', '这个页面显示出了点问题，刷新页面试试。');
+    });
   }
 
   /* 地址变化时统一入口。非法地址用 replace 改回默认页，不留历史记录 */

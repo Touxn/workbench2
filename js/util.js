@@ -37,15 +37,44 @@
     return (value < 0 ? '-' : '') + parts.join('.');
   }
 
+  /* 元转分。只接受纯数字与小数点，最多两位小数，其他一律返回 NaN 交给调用方判断 */
+  function toCents(input) {
+    var raw = String(input == null ? '' : input).replace(/[¥,\s]/g, '');
+    if (!/^\d+(\.\d{0,2})?$/.test(raw)) return NaN;
+    return Math.round(Number(raw) * 100);
+  }
+
+  /* 2026-11 → 2026 年 11 月 */
+  function monthLabel(month) {
+    var p = String(month).split('-');
+    return p[0] + ' 年 ' + Number(p[1]) + ' 月';
+  }
+
+  /* 2026-11-10 → 11 月 10 日 */
+  function dayLabel(dateStr) {
+    var p = String(dateStr).split('-');
+    return Number(p[1]) + ' 月 ' + Number(p[2]) + ' 日';
+  }
+
+  /* 全局唯一 ID：前缀_时间戳36进制_四位随机 */
+  function makeId(prefix) {
+    var rand = Math.random().toString(36).slice(2, 6);
+    return prefix + '_' + Date.now().toString(36) + '_' + (rand + '000').slice(0, 4);
+  }
+
   TW.Utils = {
     date: {
       today: today,
       monthOf: monthOf,
-      weekday: weekday
+      weekday: weekday,
+      monthLabel: monthLabel,
+      dayLabel: dayLabel
     },
     money: {
-      format: formatCents
-    }
+      format: formatCents,
+      toCents: toCents
+    },
+    id: makeId
   };
 
 })(window);

@@ -65,10 +65,74 @@
     document.body.appendChild(page);
   }
 
+  /* 轻提示：屏幕下方居中的一行黑底白字，两秒自动消失 */
+  var toastEl = null;
+  var toastTimer = 0;
+
+  function toast(text) {
+    if (!toastEl || !document.body.contains(toastEl)) {
+      toastEl = document.createElement('div');
+      toastEl.id = 'toast';
+      document.body.appendChild(toastEl);
+    }
+    toastEl.textContent = text;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+      toastEl.classList.remove('show');
+    }, 2000);
+  }
+
+  function openDialog(id) {
+    var d = document.getElementById(id);
+    if (!d) return;
+    if (typeof d.showModal === 'function') {
+      if (!d.open) d.showModal();
+    } else {
+      d.setAttribute('open', '');
+    }
+  }
+
+  function closeDialog(id) {
+    var d = document.getElementById(id);
+    if (!d) return;
+    if (typeof d.close === 'function' && d.open) {
+      d.close();
+    } else {
+      d.removeAttribute('open');
+    }
+  }
+
+  /* 字段级错误：给 .field 加 invalid，错误文字写在里面的 .err */
+  function fieldError(fieldId, message) {
+    var field = document.getElementById(fieldId);
+    if (!field) return;
+    field.classList.add('invalid');
+    var err = field.querySelector('.err');
+    if (err && message) err.textContent = message;
+  }
+
+  function clearFieldError(fieldId) {
+    var field = document.getElementById(fieldId);
+    if (field) field.classList.remove('invalid');
+  }
+
+  function clearFieldErrors(scope) {
+    var box = scope || document;
+    var fields = box.querySelectorAll('.field.invalid');
+    for (var i = 0; i < fields.length; i++) fields[i].classList.remove('invalid');
+  }
+
   TW.UI = {
     banner: banner,
     clearBanner: clearBanner,
-    fatal: fatal
+    fatal: fatal,
+    toast: toast,
+    openDialog: openDialog,
+    closeDialog: closeDialog,
+    fieldError: fieldError,
+    clearFieldError: clearFieldError,
+    clearFieldErrors: clearFieldErrors
   };
 
   /* 窗口变化时提示条可能换行，高度要跟着重算 */

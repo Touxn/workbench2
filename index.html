@@ -66,8 +66,9 @@
         <div class="page-head">
           <div>
             <h1>收支</h1>
-            <p class="sub">记一笔，月底自动汇总</p>
+            <p class="sub" id="money-sub">记一笔，月底自动汇总</p>
           </div>
+          <button class="btn btn-primary" type="button" id="money-add">记一笔</button>
         </div>
         <div class="view-body"></div>
       </section>
@@ -106,6 +107,49 @@
   </main>
 
 </div>
+
+<dialog id="dlg-money">
+  <button class="dlg-close" type="button" data-close="dlg-money" aria-label="关闭">×</button>
+  <div class="dlg-head">
+    <h3>记一笔</h3>
+    <p>日期默认今天，补记可以往前改</p>
+  </div>
+  <div class="dlg-body">
+    <div class="field" id="fld-date">
+      <label for="f-date">日期</label>
+      <input class="input" type="date" id="f-date">
+      <div class="err">请选择一个不晚于今天的日期</div>
+    </div>
+
+    <div class="field">
+      <label>类型</label>
+      <div class="seg" id="f-type">
+        <button type="button" data-type="expense" class="on">支出</button>
+        <button type="button" data-type="income">收入</button>
+      </div>
+    </div>
+
+    <div class="field" id="fld-amount">
+      <label for="f-amount">金额</label>
+      <input class="input" type="text" id="f-amount" inputmode="decimal" placeholder="0.00" autocomplete="off">
+      <div class="err">请填写金额</div>
+    </div>
+
+    <div class="field">
+      <label for="f-cat">类别</label>
+      <select id="f-cat"></select>
+    </div>
+
+    <div class="field">
+      <label for="f-note">备注</label>
+      <input class="input" type="text" id="f-note" maxlength="60" placeholder="写一句话，可以不填" autocomplete="off">
+    </div>
+  </div>
+  <div class="dlg-foot">
+    <button class="btn" type="button" data-close="dlg-money">取消</button>
+    <button class="btn btn-primary" type="button" id="f-save">保存</button>
+  </div>
+</dialog>
 
 <script src="js/util.js"></script>
 <script src="js/db.js"></script>
